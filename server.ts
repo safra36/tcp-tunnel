@@ -5,8 +5,8 @@ import * as socket from "net";
 
 
 const config = {
-    listenPort : 8001,
-    connectPort : 8000,
+    listenPort : 8000,
+    connectPort : 1080,
     connectAddress : "localhost"
 }
 
@@ -21,23 +21,41 @@ localServer.on("connection", (localSocket) => {
         'port' : config.connectPort
     })
 
+    const local = `LOCAL`;
+    const remote = `REMOTE`;
+
     remoteServer.on("connect", () => {
         console.log(`Connected to remote server.`);
     })
 
     localSocket.on("connect", () => {
-        console.log(`Connection to local server established.`);
+        console.log(`Connection to ${local} established.`);
     })
 
     remoteServer.on("data", (data : Buffer) => {
-        console.log(`Reading Remote <--> Wrting Local`);
+        console.log(`Reading ${remote} <--> Wrting ${local}`);
         localSocket.write(data);
     })
 
-
     localSocket.on("data", (data : Buffer) => {
-        console.log(`Reading Local <--> Wrting Remote`);
+        console.log(`Reading ${local} <--> Wrting ${remote}`);
         remoteServer.write(data);
+    })
+
+    remoteServer.on("error", (error) => {
+        console.log(`${remote} Error, ${error}`);
+    })
+
+    localSocket.on("error", (error) => {
+        console.log(`${local} Error, ${error}`);
+    })
+
+    remoteServer.on("end", () => {
+        console.log(`${remote} Ended.`);
+    })
+
+    localSocket.on("end", () => {
+        console.log(`${local} Ended`);
     })
     
 })
